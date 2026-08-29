@@ -87,7 +87,7 @@ Feature `F-001` · epic priority Critical · stories US-001 to US-005.
 - The source registers exactly one request handler, inline on `http.createServer`, and every request delivered through the server's `request` event invokes it `[server.js:6]`.
 - Such a request receives an `HTTP/1.1` response with status `200` on the same connection `[server.js:7-9]`.
 
-**Notes** — `CONNECT` is not delivered through the `request` event. Node routes it to a separate `connect` event, and this source registers no listener for it `[server.js:1-14]`, so a valid `CONNECT` receives no response and the socket closes. Connection-management headers are Node-supplied and follow the request's own `Connection` value. The source configures no timeout, backlog, or connection limit.
+**Notes** — `CONNECT` is not delivered through the `request` event. Node routes it to a separate `connect` event, and this source registers no listener for it `[server.js:1-14]`, so a valid `CONNECT` receives no response and the socket closes. Connection-management headers are Node-supplied and follow the request's own `Connection` value. The source configures no timeout, backlog, or connection limit `[server.js:1-14]`.
 
 ### US-004 — Know that the listener is confined to the loopback interface
 
@@ -100,7 +100,7 @@ Feature `F-001` · epic priority Critical · stories US-001 to US-005.
 - The bind address passed to `server.listen` is the constant `127.0.0.1`, attaching the listener to the loopback interface only `[server.js:3,12]`.
 - The source contains nothing that broadens the bind — no wildcard address, and no address taken from the environment or the command line `[server.js:1-14]`.
 
-**Notes** — in the verification environment a request to the host's non-loopback address on port 3000 did not connect. Repository inspection cannot establish what else may answer that address; host firewall and network policy lie outside it, and the source contains no TLS, allow-list, or authorization code. Constraint C-02 records the effect and assumption A-03 the co-location it implies; whether the confinement is intentional is an open question, which is why this story reports interface attachment rather than intent.
+**Notes** — in the verification environment a request to the host's non-loopback address on port 3000 did not connect. Repository inspection cannot establish what else may answer that address; host firewall and network policy lie outside it, and the source contains no TLS, allow-list, or authorization code `[server.js:1-14]`. Constraint C-02 records the effect and assumption A-03 the co-location it implies; whether the confinement is intentional is an open question, which is why this story reports interface attachment rather than intent.
 
 ### US-005 — Change the endpoint by editing one file
 
@@ -212,7 +212,7 @@ Feature `F-003` · epic priority Medium · story US-011.
 - The handler performs no logging, so stdout is unchanged after requests are served `[server.js:6-10]`.
 - The source registers no listener for the server's `error` event, so a bind failure is unhandled and no readiness line is printed `[server.js:1-14]`.
 
-**Notes** — with port 3000 occupied the process emitted an unhandled error event and exited non-zero — assumption A-02 and constraints C-04 and C-08. C-04 holds for an unmodified process in the same network namespace, since the endpoint is a fixed constant with no fallback `[server.js:3-4]`; a separate namespace or container is not excluded by anything in the repository. That single line is the entire telemetry surface: no structured logger, log destination, health endpoint, or metric exists, and §1.2.3.3 of the Technical Specification records that no KPI is instrumented.
+**Notes** — with port 3000 occupied the process emitted an unhandled error event and exited non-zero — assumption A-02 and constraints C-04 and C-08. C-04 holds for an unmodified process in the same network namespace, since the endpoint is a fixed constant with no fallback `[server.js:3-4]`; a separate namespace or container is not excluded by anything in the repository. That single line is the entire telemetry surface: no structured logger, log destination, health endpoint, or metric exists (repository-wide search), and §1.2.3.3 of the Technical Specification records that no KPI is instrumented.
 
 ## E-04 — Zero-Dependency Standard-Library Execution Model
 
@@ -244,7 +244,7 @@ Feature `F-004` · epic priority High · stories US-012 to US-014.
 - The source loads exactly one module — the Node core `http` module, via a single `require` — and contains no `import` statement and no dynamic import `[server.js:1,1-14]`.
 - No lock file and no vendored library exist in the repository (repository-wide search).
 
-**Notes** — the service still depends on the Node.js runtime, and whatever supply-chain and licensing obligations an adopter's policy attaches to that runtime are unaffected. No `engines` field, `.nvmrc`, or `.node-version` exists, so the supported range is undeclared and compatibility with any given release is unknown rather than guaranteed — assumption A-01. Constraint C-05 records the zero-dependency position.
+**Notes** — the service still depends on the Node.js runtime, and whatever supply-chain and licensing obligations an adopter's policy attaches to that runtime are unaffected. No `engines` field, `.nvmrc`, or `.node-version` exists (repository-wide search), so the supported range is undeclared and compatibility with any given release is unknown rather than guaranteed — assumption A-01. Constraint C-05 records the zero-dependency position.
 
 ### US-014 — Execute the source exactly as authored
 
@@ -278,7 +278,7 @@ Feature `F-005` · epic priority Medium · stories US-015 to US-017.
 - All nine numbered clauses are present, running through the end of terms and the appendix `[LICENSE:7-201]`.
 - The clauses bearing on reuse are readable in place: redistribution conditions at clause 4 `[LICENSE:89]`, the "AS IS" warranty disclaimer at clause 7 `[LICENSE:143]`, and the liability limitation at clause 8 `[LICENSE:153]`.
 
-**Notes** — the normalising comparison is what `F-005-RQ-001`'s "unmodified" wording is taken to require, and it is stated because published copies of the text differ in leading and trailing blank lines while the substantive text is identical — a raw byte comparison could fail on whitespace alone. The normalising comparison is stated in the conventions note. The repository contains no `NOTICE` file, so clause 4(d)'s obligation to carry a `NOTICE` file's attribution notices into derivative works is not currently triggered `[LICENSE:89-129]`. Constraint C-09 records that these obligations govern reuse.
+**Notes** — the normalising comparison is what `F-005-RQ-001`'s "unmodified" wording is taken to require, and it is stated because published copies of the text differ in leading and trailing blank lines while the substantive text is identical — a raw byte comparison could fail on whitespace alone. The normalising comparison is stated in the conventions note. The repository contains no `NOTICE` file (repository-wide search), so clause 4(d)'s obligation to carry a `NOTICE` file's attribution notices into derivative works is not currently triggered `[LICENSE:89-129]`. Constraint C-09 records that these obligations govern reuse.
 
 ### US-016 — Identify the repository from its README
 
@@ -382,4 +382,3 @@ Each is a question for the product owner, and **none is blocking** — this docu
 | Clustering and multi-instance operation | §1.3.2.1 |
 | CI/CD, containerization, infrastructure-as-code | §1.3.2.1 |
 | Sharing, bot, messaging, or account capability implied by the product name in the greeting | §1.3.2.1 and §2.1.6 |
-
