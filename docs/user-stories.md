@@ -8,7 +8,7 @@ This document is an as-built agile requirements artifact for this repository: fi
 
 - **Story shape.** Each story is one sentence: *As a `<persona>`, I want `<capability>`, so that `<benefit>`.* The persona is one of the four labels below, written verbatim.
 - **Acceptance criteria are bullets.** Each bullet is exactly one condition a reader can judge pass or fail, stated in the present tense as a condition of *satisfaction*.
-- **Criteria versus notes.** A criterion is drawn from the published acceptance checks for a requirement the story covers, or from a source fact those checks rest on; a negative qualifies where the absence is itself the contract. Everything else is a **note**, and notes are **non-normative** — they record runtime, host or client behaviour, incidental absences nobody required, and the evidence behind a status. A note is never a condition this repository must keep satisfying.
+- **Criteria versus notes.** A criterion is drawn from the published acceptance checks for a requirement the story covers, or from a source fact those checks rest on; a negative qualifies where the absence is itself the contract. Everything else is a **note**, and notes are **non-normative** — they record runtime, host or client behavior, incidental absences nobody required, and the evidence behind a status. A note is never a condition this repository must keep satisfying.
 - **Priority vocabulary.** `Must-Have` and `Should-Have`, inherited from the requirement each story covers. Epics carry the feature priority: Critical, High, or Medium.
 - **Baseline status vocabulary.** `Verified`, `Verified minimally`, `Not satisfied`. Baseline status is **inherited** from the Technical Specification's traceability matrix in §2.5.1 for the requirement the story covers — the least satisfied where it covers more than one. It is **not** re-derived from whether the story's own criteria pass, so a story whose criterion passes can still carry `Verified minimally` where the assessment records how thinly the requirement is met.
 - **Verification vocabulary.** Source inspection, shell probe, repository-wide search, captured stdout, browser check.
@@ -118,7 +118,6 @@ Feature `F-001` · epic priority Critical · stories US-001 to US-005.
 
 **Notes** — constraints C-01 and C-06 record the consequences — the endpoint is immutable without a source edit, and no configuration can vary application behavior. C-06 holds for application configuration, and the source-verifiable claim behind it is exactly that: `server.js` reads no application-specific environment variable, command-line argument, or configuration file `[server.js:1-14]`, so the application exposes no configuration surface for an operator to set. Node's own runtime and launcher inputs sit outside that claim and remain an external trust boundary — variables the runtime itself consumes, such as `NODE_OPTIONS` (per US-001), can preload modules and alter process behavior even though the application reads nothing. Observable behavior also varies with runtime version, port availability, name resolution, request framing and client behavior, which is why those live in notes.
 
-
 ## E-02 — Uniform Static Plain-Text Response
 
 Feature `F-002` · epic priority Critical · stories US-006 to US-010.
@@ -193,7 +192,6 @@ Feature `F-002` · epic priority Critical · stories US-006 to US-010.
 
 **Notes** — observed in a headless Chrome 151 session and recorded as observation, not obligation — an arbitrary path with a query rendered identically with the URL retained and no redirect; the console logged no message of any severity; and the browser's automatic `/favicon.ico` request was answered `200` with the same plain-text body and silently discarded, so no icon appeared. Another browser or version may present these differently. §7.1 of the Technical Specification determines that this response surface is not a user interface; the story documents a browser used as an ad-hoc HTTP client.
 
-
 ## E-03 — Startup Readiness Notification
 
 Feature `F-003` · epic priority Medium · story US-011.
@@ -260,7 +258,6 @@ Feature `F-004` · epic priority High · stories US-012 to US-014.
 
 **Notes** — constraint C-11 records the consequence — the module cannot be consumed as a library.
 
-
 ## E-05 — Repository Baseline and Licensing Artifacts
 
 Feature `F-005` · epic priority Medium · stories US-015 to US-017.
@@ -303,7 +300,6 @@ Feature `F-005` · epic priority Medium · stories US-015 to US-017.
 - The repository asserts a copyright holder — a concrete year and a named owner — in a location intended for one, such as a per-file source header or a `NOTICE` file.
 
 **Notes** — the criterion is **not met at the baseline commit**. `server.js` carries no licence header `[server.js:1-14]`, `README.md` carries no copyright line `[README.md:1]`, and no `NOTICE` file exists (repository-wide search); constraint C-10 records the consequence. The Apache appendix supplies the boilerplate intended for this purpose, instructing an adopter to attach it to their work with the bracketed fields replaced and enclosed in the file format's comment syntax `[LICENSE:178-187]`; the line `Copyright [yyyy] [name of copyright owner]` `[LICENSE:189]` is part of that template rather than a field inside `LICENSE` to be edited. Reading the placeholder as a field to edit would modify the licence text `F-005-RQ-001` requires to be unmodified, so satisfaction is a separate notice rather than a licence edit. Satisfying the criterion requires a copyright-owner decision the repository does not hold, and making that change is out of scope for this work.
-
 
 ## Requirement coverage
 
