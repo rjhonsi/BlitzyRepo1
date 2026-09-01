@@ -7,7 +7,7 @@ BlitzyRepo1 is a minimal Node.js HTTP service. It listens on `127.0.0.1:3000` `[
 ## Prerequisites
 
 - **A Node.js runtime**, to run the service. This repository declares no supported Node version: there is no `.nvmrc`, no `.node-version`, and no `package.json` and therefore no `engines` field. The documentation here was verified against **Node.js v22.23.2**, which is the version every behaviour described below was observed on — it is a record of what was verified, not a supported range.
-- **`curl`, or any HTTP client**, for the verification step in Quick start only. The service itself needs nothing but Node.
+- **`curl`, or any HTTP client**, for the verification step in Quick start and the worked examples below. The service itself needs nothing but Node.
 - **No install step**, because there are no third-party dependencies `[server.js:1]`. Clone the repository and run it.
 
 ## Quick start
@@ -40,6 +40,16 @@ Content-Type: text/plain
 Hello, World Welcome to Sharebot!
 ```
 
+**Assert the body length.** The greeting is 33 characters and the string literal it is written in ends with a newline `[server.js:9]`, so an ordinary request transfers exactly 34 bytes. `curl` reports that count itself:
+
+```bash
+curl -s -o /dev/null -w '%{size_download}\n' http://127.0.0.1:3000/
+```
+
+```text
+34
+```
+
 Stop the service with **Ctrl+C** in the terminal running it. Termination is abrupt: the file registers no `SIGINT` or `SIGTERM` handler `[server.js:1-14]`, so the process ends immediately and in-flight requests are not drained. This is the current behaviour of the service as committed.
 
 ## What it responds
@@ -56,7 +66,41 @@ The response contract is this service's only consumer-facing interface. It is de
 
 The request handler accepts `req` and never dereferences it `[server.js:6]`; the file dereferences it nowhere `[server.js:1-14]`. Nothing about the request — method, path, query string or body — changes what the application writes, and there is no routing of any kind. One consequence is worth drawing out, because a reader will otherwise get it wrong: **`/health` is not a health endpoint.** It returns `200` for the same reason every other path does, and concluding from that response that a health check exists would be a mistake.
 
-**The one wire difference is `HEAD`.** A `HEAD` request receives the status and `Content-Type` with no body and no `Content-Length`. The request still reaches the request handler and the handler still writes the body; the runtime suppresses that body on the wire, as HTTP requires. Verified on Node.js v22.23.2. A check that hardcodes a 34-byte body therefore will not hold for `HEAD`, and that is not a defect.
+Any ordinary method, against any path, with any query string, demonstrates that — here `POST /any/path?q=1`:
+
+```bash
+curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}\n' -X POST 'http://127.0.0.1:3000/any/path?q=1'
+```
+
+```text
+200 text/plain 34
+```
+
+`DELETE`, `OPTIONS`, `PUT` and `PATCH` against that same URL each print the identical line: the runtime dispatches every one of them to the one handler `[server.js:6-10]`, which reads nothing from the request. Verified on Node.js v22.23.2.
+
+**The one wire difference is `HEAD`.** A `HEAD` request receives the status and `Content-Type` with no body and no `Content-Length`. The request still reaches the request handler and the handler still writes the body; the runtime suppresses that body on the wire, as HTTP requires. Verified on Node.js v22.23.2. A check that hardcodes a 34-byte body therefore will not hold for `HEAD`, and that is not a defect. Both halves of that are observable — the status arrives, and the transferred body is zero bytes:
+
+```bash
+curl -s -I -o /dev/null -w '%{http_code} %{size_download}\n' http://127.0.0.1:3000/
+```
+
+```text
+200 0
+```
+
+The headers themselves, with the runtime's own elided:
+
+```bash
+curl -s -I http://127.0.0.1:3000/
+```
+
+```text
+HTTP/1.1 200 OK
+Content-Type: text/plain
+...
+```
+
+What the `...` stands for is the headers the runtime adds, `Date` among them. It conceals no `Content-Length`: there is no `Content-Length:` line anywhere in that output for a `HEAD` request. Verified on Node.js v22.23.2.
 
 **Header provenance.** `Content-Type` is the only header the code sets `[server.js:8]`, and it is the only `setHeader` call in the file `[server.js:1-14]`. `Date`, the connection headers and `Content-Length` are supplied by the runtime, not by `server.js`.
 
@@ -74,6 +118,42 @@ The two values that govern reachability are configuration constants: module-leve
 The file performs zero `process.env` reads `[server.js:1-14]`, and the repository has no configuration file, no `.env` and no command-line argument parsing. Setting `PORT` or `HOST` in the environment therefore changes nothing; both were verified to be ignored on Node.js v22.23.2.
 
 The consequence is the most significant and least visible fact about this service. The listener performs a loopback bind `[server.js:3]`: callers on the same host reach it at `127.0.0.1:3000`, and callers on any other host do not — a request sent to this machine's routable address is refused rather than answered. Verified on Node.js v22.23.2.
+
+**Demonstrating `hostname`.** With the service running, send the same request to any address of this machine other than `127.0.0.1` — written here as `<host-address>`, because the value is specific to your machine:
+
+```bash
+curl -sS -m 3 -o /dev/null 'http://<host-address>:3000/'; echo "exit=$?"
+```
+
+```text
+curl: (7) Failed to connect to <host-address> port 3000 ...
+exit=7
+```
+
+Nothing answers: no HTTP status comes back at all, and `curl` exits `7`, its connection-failure status. The tail of that message is elided because it carries a timing that differs on every attempt. The same running instance still answers on loopback, and that control is what makes this a refusal by the bind address `[server.js:3]` rather than a service that is not up:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/
+```
+
+```text
+200
+```
+
+**Demonstrating `port`.** With that first instance still holding `127.0.0.1:3000`, start a second one in another terminal:
+
+```bash
+node server.js; echo "exit=$?"
+```
+
+```text
+...
+Error: listen EADDRINUSE: address already in use 127.0.0.1:3000
+...
+exit=1
+```
+
+The startup line never prints, the second process exits `1`, and the first instance carries on serving: the port `[server.js:4]` admits exactly one listener at a time. The elided lines are the runtime's own stack frames and version banner, which vary by host and are not part of what to expect. Verified on Node.js v22.23.2. Troubleshooting covers this symptom and what to do about it.
 
 To run the service on a different address or port, take the editable copy in `docs/annotated-source.md` (linked under Documentation), change the two constants in your copy, and run it as a file outside this repository. Editing that copy does not affect this repository, whose two values stay exactly as committed.
 
