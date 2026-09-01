@@ -27,7 +27,7 @@ Server running at http://127.0.0.1:3000/
 That line confirms the bind succeeded. Verify the service is serving, from the same host:
 
 ```bash
-curl -i http://127.0.0.1:3000/
+curl -i --noproxy '*' http://127.0.0.1:3000/
 ```
 
 Expect status `200` `[server.js:7]`, the header `Content-Type: text/plain` `[server.js:8]`, and a 34-byte body `[server.js:9]`. The remaining headers are added by the runtime and are not asserted here — `Date` differs on every request — so they are elided below rather than shown as output you should expect to match:
@@ -43,7 +43,7 @@ Hello, World Welcome to Sharebot!
 **Assert the body length.** The greeting is 33 characters and the string literal it is written in ends with a newline `[server.js:9]`, so an ordinary request transfers exactly 34 bytes. `curl` reports that count itself:
 
 ```bash
-curl -s -o /dev/null -w '%{size_download}\n' http://127.0.0.1:3000/
+curl -s --noproxy '*' -o /dev/null -w '%{size_download}\n' http://127.0.0.1:3000/
 ```
 
 ```text
@@ -69,7 +69,7 @@ The request handler accepts `req` and never dereferences it `[server.js:6]`; the
 Any ordinary method, against any path, with any query string, demonstrates that — here `POST /any/path?q=1`:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}\n' -X POST 'http://127.0.0.1:3000/any/path?q=1'
+curl -s --noproxy '*' -o /dev/null -w '%{http_code} %{content_type} %{size_download}\n' -X POST 'http://127.0.0.1:3000/any/path?q=1'
 ```
 
 ```text
@@ -81,7 +81,7 @@ curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}\n' -X POS
 **The one wire difference is `HEAD`.** A `HEAD` request receives the status and `Content-Type` with no body and no `Content-Length`. The request still reaches the request handler and the handler still writes the body; the runtime suppresses that body on the wire, as HTTP requires. Verified on Node.js v22.23.2. A check that hardcodes a 34-byte body therefore will not hold for `HEAD`, and that is not a defect. Both halves of that are observable — the status arrives, and the transferred body is zero bytes:
 
 ```bash
-curl -s -I -o /dev/null -w '%{http_code} %{size_download}\n' http://127.0.0.1:3000/
+curl -s --noproxy '*' -I -o /dev/null -w '%{http_code} %{size_download}\n' http://127.0.0.1:3000/
 ```
 
 ```text
@@ -91,7 +91,7 @@ curl -s -I -o /dev/null -w '%{http_code} %{size_download}\n' http://127.0.0.1:30
 The headers themselves, with the runtime's own elided:
 
 ```bash
-curl -s -I http://127.0.0.1:3000/
+curl -s --noproxy '*' -I http://127.0.0.1:3000/
 ```
 
 ```text
@@ -122,7 +122,7 @@ The consequence is the most significant and least visible fact about this servic
 **Demonstrating `hostname`.** With the service running, send the same request to any address of this machine other than `127.0.0.1` — written here as `<host-address>`, because the value is specific to your machine:
 
 ```bash
-curl -sS -m 3 -o /dev/null 'http://<host-address>:3000/'; echo "exit=$?"
+curl -sS --noproxy '*' -m 3 -o /dev/null 'http://<host-address>:3000/'; echo "exit=$?"
 ```
 
 ```text
@@ -133,7 +133,7 @@ exit=7
 Nothing answers: no HTTP status comes back at all, and `curl` exits `7`, its connection-failure status. The tail of that message is elided because it carries a timing that differs on every attempt. The same running instance still answers on loopback, and that control is what makes this a refusal by the bind address `[server.js:3]` rather than a service that is not up:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/
+curl -s --noproxy '*' -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/
 ```
 
 ```text
