@@ -2,7 +2,7 @@
 
 ## Purpose
 
-BlitzyRepo1 is a minimal Node.js HTTP service. It listens on `127.0.0.1:3000` `[server.js:3-4]` and answers every request with a fixed plain-text greeting `[server.js:7-9]`. It is built on the Node.js standard library alone: the only import in the file is the `http` core module `[server.js:1]`, and the file contains no third-party import at all `[server.js:1-14]`. There is no build step and nothing to install, so the source file *is* the deployable artifact — `server.js` is both what you read and what you run.
+BlitzyRepo1 is a minimal Node.js HTTP service. It listens on `127.0.0.1:3000` `[server.js:3-4]`, and its single request handler writes the same fixed plain-text greeting for every request dispatched to it `[server.js:7-9]` — what a caller observes on the wire, including the one case where it differs, is set out under **What it responds** below. It is built on the Node.js standard library alone: the only import in the file is the `http` core module `[server.js:1]`, and the file contains no third-party import at all `[server.js:1-14]`. There is no build step and nothing to install, so the source file *is* the deployable artifact — `server.js` is both what you read and what you run.
 
 ## Prerequisites
 
@@ -36,7 +36,6 @@ Expect status `200` `[server.js:7]`, the header `Content-Type: text/plain` `[ser
 HTTP/1.1 200 OK
 Content-Type: text/plain
 ...
-Content-Length: 34
 
 Hello, World Welcome to Sharebot!
 ```
