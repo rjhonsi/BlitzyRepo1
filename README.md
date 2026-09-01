@@ -164,7 +164,7 @@ To run the service on a different address or port, take the editable copy in `do
 | Startup fails reporting that the address is already in use | Another process already holds `127.0.0.1:3000`. There is no fallback port, and the file registers no `server.on('error')` handler `[server.js:1-14]`, so the process reports the error and exits. Stop whatever holds the port, or take the copy in `docs/annotated-source.md`, change `port` in it, and run that outside this repository. |
 | The `node` command is not found | No Node.js runtime is on your `PATH`. Install one and run the command again; the version this documentation was verified against is named under Prerequisites. |
 | A request from another machine is refused | Expected, not a fault: the listener performs a loopback bind. See Configuration. |
-| `npm start` or `npm install` fails reporting that there is no `package.json` | Correct — this repository carries no manifest, so neither command has an entry point, and nothing needs installing: `node server.js` is the entire startup path. Do not run `npm install` here; it leaves a `package-lock.json` in the working tree, a file this repository does not carry. |
+| `npm start` or `npm install` fails reporting that there is no `package.json` | Correct — this repository carries no manifest, so neither command has an entry point, and nothing needs installing: `node server.js` is the entire startup path. Do not run `npm install` here; it leaves a `package-lock.json` in the working tree, a file this repository does not carry. Verified on npm 11.19.1, which is installed separately and is not the npm version that ships inside the Node.js runtime named under Prerequisites. |
 
 ## Documentation
 
