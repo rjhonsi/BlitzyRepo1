@@ -11,6 +11,8 @@ const hostname = '127.0.0.1';
 const port = 3000;
 
 // Create a server whose handler ignores request details and always sends the same response.
+// Node's parser decides what reaches that handler: a method token it does not list is
+// answered with its own 400, and CONNECT goes to a 'connect' event nothing here binds.
 // @param {http.IncomingMessage} req - the inbound request.
 // @param {http.ServerResponse} res - the outbound response.
 const server = http.createServer((req, res) => {
@@ -20,6 +22,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('Content-Type', 'text/plain');
   // Write the greeting and end the response in a single call. The trailing
   // newline is part of the payload, so it counts towards Content-Length.
+  // Node derives that header when it frames a body, so a HEAD or HTTP/1.0 reply declares none.
   res.end('Hello, World Welcome to Sharebot!\n');
 });
 
