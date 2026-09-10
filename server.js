@@ -1,4 +1,5 @@
 // Minimal Node.js HTTP server that returns one fixed plain-text greeting for every request.
+// Run it with: node server.js
 
 // Use Node's built-in HTTP module; no third-party framework is required.
 const http = require('http');
@@ -10,6 +11,8 @@ const hostname = '127.0.0.1';
 const port = 3000;
 
 // Create a server whose handler ignores request details and always sends the same response.
+// @param {http.IncomingMessage} req - inbound request; never read, so no routing depends on it.
+// @param {http.ServerResponse} res - outbound response; the statements below write and end it.
 const server = http.createServer((req, res) => {
   // Report the exchange as a successful HTTP 200 OK.
   res.statusCode = 200;
@@ -22,6 +25,7 @@ const server = http.createServer((req, res) => {
 
 // Start listening on the configured loopback address.
 server.listen(port, hostname, () => {
-  // Log the bound address after the listener is ready.
+  // Log the bound address after the listener is ready. This callback receives no
+  // arguments, so the logged URL is rebuilt from the same constants passed to listen().
   console.log(`Server running at http://${hostname}:${port}/`);
 });
