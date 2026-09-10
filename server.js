@@ -11,8 +11,8 @@ const hostname = '127.0.0.1';
 const port = 3000;
 
 // Create a server whose handler ignores request details and always sends the same response.
-// @param {http.IncomingMessage} req - inbound request; never read, so no routing depends on it.
-// @param {http.ServerResponse} res - outbound response; the statements below write and end it.
+// @param {http.IncomingMessage} req - the inbound request.
+// @param {http.ServerResponse} res - the outbound response.
 const server = http.createServer((req, res) => {
   // Report the exchange as a successful HTTP 200 OK.
   res.statusCode = 200;
@@ -25,7 +25,6 @@ const server = http.createServer((req, res) => {
 
 // Start listening on the configured loopback address.
 server.listen(port, hostname, () => {
-  // Log the bound address after the listener is ready. This callback receives no
-  // arguments, so the logged URL is rebuilt from the same constants passed to listen().
+  // Log the bound address after the listener is ready.
   console.log(`Server running at http://${hostname}:${port}/`);
 });
